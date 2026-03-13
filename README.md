@@ -1,16 +1,13 @@
-# automatic-light-control-system
-
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-LiquidCrystal_I2C lcd_1(32, 16, 2);
+LiquidCrystal_I2C lcd_1(0x20, 16, 2);
 
-const int led = 9;
-const int sensorPin = A0;
+const int led = 9; // Lamp controlled by light
+const int sensorPin = A0; 
 
 int sensorValue = 0;
-int targetBrightness = 0;
-int currentBrightness = 0;
+int threshold = 500;   
 
 void setup()
 {
@@ -30,38 +27,25 @@ void loop()
 {
   sensorValue = analogRead(sensorPin);
 
-  // Convert light level to wanted LED brightness
-  targetBrightness = map(sensorValue, 0, 1023, 255, 0);
-  targetBrightness = constrain(targetBrightness, 0, 255);
-
-  // Smooth fade toward target brightness
-  if (currentBrightness < targetBrightness)
-  {
-    currentBrightness++;
-  }
-  else if (currentBrightness > targetBrightness)
-  {
-    currentBrightness--;
-  }
-
-  analogWrite(led, currentBrightness);
-
-  Serial.print("Sensor = ");
-  Serial.print(sensorValue);
-  Serial.print("  Target = ");
-  Serial.print(targetBrightness);
-  Serial.print("  Current = ");
-  Serial.println(currentBrightness);
-
   lcd_1.setCursor(0,0);
-  lcd_1.print("Light: ");
-  lcd_1.print(sensorValue);
-  lcd_1.print("    ");
+  lcd_1.print("Environment:");
+D
+  if(sensorValue > threshold)
+  {
+    // Bright environment
+    analogWrite(led, 0);  // LED OFF
 
-  lcd_1.setCursor(0,1);
-  lcd_1.print("LED: ");
-  lcd_1.print(currentBrightness);
-  lcd_1.print("     ");
+    lcd_1.setCursor(0,1);
+    lcd_1.print("Day      ");
+  }
+  else
+  {
+    // Dark environment
+    analogWrite(led, 255); // LED ON
 
-  delay(10);
+    lcd_1.setCursor(0,1);
+    lcd_1.print("Night    ");
+  }
+
+  delay(200);
 }
